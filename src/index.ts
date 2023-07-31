@@ -18,7 +18,7 @@ const createWindow = (): void => {
     width: 800,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
-    },
+          },
   });
 
   // and load the index.html of the app.
@@ -26,6 +26,21 @@ const createWindow = (): void => {
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
+
+  mainWindow.webContents.session.webRequest.onBeforeSendHeaders(
+    (details, callback) => {
+      callback({ requestHeaders: { Origin: '*', ...details.requestHeaders } });
+    },
+  );
+
+  mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        'Access-Control-Allow-Origin': ['*'],
+        ...details.responseHeaders,
+      },
+    });
+  });
 
   updater({
       repo: 'ilyavolodin/graphql-diagram',
@@ -37,6 +52,28 @@ const createWindow = (): void => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', createWindow);
+
+app.setAsDefaultProtocolClient('graphql-diagram');
+
+app.on('open-url', (event, url) => {
+  event.preventDefault();
+
+  const parsedUrl = new URL(url);
+  if (parsedUrl.pathname.includes('/oauth/callback')) {
+    const parsedUrl = new URL(url);
+    const pathParts = parsedUrl.pathname.split('/');
+    if (pathParts[1] === 'oauth' && pathParts[2] === 'callback') {
+      const encodedServer = pathParts[3];
+      const server = Buffer.from(encodedServer, 'base64').toString('utf-8');
+      const code = parsedUrl.searchParams.get('code');
+      if (code) {
+        // get window and send an event that token is stored
+        const mainWindow = BrowserWindow.getAllWindows()[0];
+        mainWindow.webContents.send('authenticated', { server, code });
+      }
+    }
+  }
+});
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
