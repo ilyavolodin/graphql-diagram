@@ -5,17 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch via NPM",
+            "type": "node",
             "request": "launch",
-            "runtimeArgs": [
-                "run-script",
-                "start"
+            "name": "Electron Main",
+            "program": "${workspaceFolder}/node_modules/@electron-forge/cli/dist/electron-forge-start",
+            "args": [
+                "--vscode"
             ],
-            "runtimeExecutable": "npm",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "type": "node"
-        }
+            "cwd": "${workspaceFolder}"
+          }
     ]
 }

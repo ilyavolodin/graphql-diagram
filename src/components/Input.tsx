@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { InputHTMLAttributes } from 'react';
 
 export enum InputSize {
     Small,
@@ -6,10 +6,10 @@ export enum InputSize {
     Large
 }
 
-type InputProps = {
+interface InputProps  extends InputHTMLAttributes<HTMLInputElement> {
     size?: InputSize,
     icon?: string,
-} & React.HTMLAttributes<HTMLInputElement>;
+}
 
 export const Input: React.FC<InputProps> = ({ size = InputSize.Medium, icon, ...props }) => {
     const commonStyles = 'focus:shadow-soft-primary-outline text-sm leading-5.6 ease-soft block rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding text-gray-700 placeholder:text-gray-500 transition-all focus:border-fuchsia-300 focus:outline-none min-w-full';
